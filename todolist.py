@@ -10,8 +10,9 @@ engine = create_engine('sqlite:///todo.db')
 # Base object for table below
 Base = declarative_base()
 
-
 # Describe table as a class
+
+
 class Table(Base):
     __tablename__ = 'task'
     id = Column(Integer, primary_key=True)
@@ -39,9 +40,19 @@ weekdays = {
 }
 
 
+def print_tasks(tasks):
+    if not tasks:
+        print("Nothing to do!")
+    else:
+        for index, row in enumerate(tasks):
+            print(
+                f"{index+1}. {row.task}. {row.deadline.day} {row.deadline.strftime('%b')}")
+    print()
+
+
 def add_task():
     new_task = input("Enter task\n")
-    date = datetime.strptime(input("Enter deadline\n"), "%Y-%m-%d") 
+    date = datetime.strptime(input("Enter deadline\n"), "%Y-%m-%d")
     new_row = Table(task=new_task, deadline=date)
     session.add(new_row)
     session.commit()
@@ -50,21 +61,15 @@ def add_task():
 
 def todays_task():
     today = datetime.today()
-    print(f"Today {today.day} {today.strftime('%b')}:")
+    print(f"{today.day} {today.strftime('%b')}:")
     tasks = session.query(Table).filter(Table.deadline == today.date()).all()
-    if not tasks:
-        print("Nothing to do!")
-    else:
-        for todo in tasks:
-            print(f"{todo.id}. {todo.task}")
+    print_tasks(tasks)
 
 
 def all_tasks():
     tasks = session.query(Table).order_by(Table.deadline).all()
     print("All tasks:")
-    for index, row in enumerate(tasks):
-        print(
-            f"{index+1}. {row.task}. {row.deadline.day} {row.deadline.strftime('%b')}")
+    print_tasks(tasks)
 
 
 def weeks_task():
@@ -75,29 +80,26 @@ def weeks_task():
             f"{weekdays[current_day.weekday()]} {current_day.day} {current_day.strftime('%b')}:")
         tasks = session.query(Table).filter(
             Table.deadline == current_day).all()
-        if not tasks:
-            print("Nothing to do!")
-        else:
-            for enum, todo in enumerate(tasks):
-                print(f"{enum+1}. {todo.task}")
-        print()
+        print_tasks(tasks)
+
 
 def missed_task():
     print("Missed tasks:")
-    tasks = session.query(Table).filter(Table.deadline < datetime.today().date()).all()
-    for index, row in enumerate(tasks):
-        print(f"{index+1}. {row.task}. {row.deadline.day} {row.deadline.strftime('%b')}")
-    print()
+    tasks = session.query(Table).filter(
+        Table.deadline < datetime.today().date()).all()
+    print_tasks(tasks)
+
 
 def delete_task():
     print("Choose the number of the task you want to delete:")
     tasks = session.query(Table).all()
-    for index, row in enumerate(tasks):
-        print(f"{index+1}. {row.task}. {row.deadline.day} {row.deadline.strftime('%b')}")
+    print_tasks(tasks)
     session.delete(tasks[int(input()) - 1])
     session.commit()
 
     print("The task has been deleted!")
+    print()
+
 
 while True:
     print("1) Today's tasks\n2) Week's tasks\n3) All tasks\n4) Missed tasks\n5) Add task\n6) Delete task\n0) Exit")
