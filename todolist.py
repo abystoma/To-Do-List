@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Date
+from sqlalchemy import Column, Integer, String, Date, update
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
 
@@ -50,13 +50,19 @@ def print_tasks(tasks):
     print()
 
 
+def get_task_input():
+    task = input("Enter task\n")
+    deadline = datetime.strptime(input("Enter deadline\n"), "%Y-%m-%d")
+    return [task, deadline]
+
+
 def add_task():
-    new_task = input("Enter task\n")
-    date = datetime.strptime(input("Enter deadline\n"), "%Y-%m-%d")
-    new_row = Table(task=new_task, deadline=date)
+    task, deadline = get_task_input()
+    new_row = Table(task=task, deadline=deadline)
     session.add(new_row)
     session.commit()
     print("The task has been added!")
+    print()
 
 
 def todays_task():
@@ -103,8 +109,25 @@ def delete_task():
     print()
 
 
+def update_task():
+    tasks = session.query(Table).order_by(Table.deadline).all()
+    if not tasks:
+        print("Nothing to do!")
+        print()
+        return
+    print("Enter the index of the task you want to edit")
+    print_tasks(tasks)
+    index = int(input()) - 1
+    task, deadline = get_task_input()
+    tasks[index].task = task
+    tasks[index].deadline = deadline
+    session.commit()
+    print("Task updated")
+    print()
+
+
 while True:
-    print("1) Today's tasks\n2) Week's tasks\n3) All tasks\n4) Missed tasks\n5) Add task\n6) Delete task\n0) Exit")
+    print("1) Today's tasks\n2) Week's tasks\n3) All tasks\n4) Missed tasks\n5) Add task\n6) Update task\n7) Delete task\n0) Exit")
     choice = int(input())
     if choice == 1:
         todays_task()
@@ -117,6 +140,8 @@ while True:
     elif choice == 5:
         add_task()
     elif choice == 6:
+        update_task()
+    elif choice == 7:
         delete_task()
     elif choice == 0:
         break
