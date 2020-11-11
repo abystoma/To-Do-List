@@ -82,9 +82,25 @@ def weeks_task():
                 print(f"{enum+1}. {todo.task}")
         print()
 
+def missed_task():
+    print("Missed tasks:")
+    tasks = session.query(Table).filter(Table.deadline < datetime.today().date()).all()
+    for index, row in enumerate(tasks):
+        print(f"{index+1}. {row.task}. {row.deadline.day} {row.deadline.strftime('%b')}")
+    print()
+
+def delete_task():
+    print("Choose the number of the task you want to delete:")
+    tasks = session.query(Table).all()
+    for index, row in enumerate(tasks):
+        print(f"{index+1}. {row.task}. {row.deadline.day} {row.deadline.strftime('%b')}")
+    session.delete(tasks[int(input()) - 1])
+    session.commit()
+
+    print("The task has been deleted!")
 
 while True:
-    print("1) Today's tasks\n2) Week's tasks\n3) All tasks\n4) Add task\n0) Exit")
+    print("1) Today's tasks\n2) Week's tasks\n3) All tasks\n4) Missed tasks\n5) Add task\n6) Delete task\n0) Exit")
     choice = int(input())
     if choice == 1:
         todays_task()
@@ -93,7 +109,11 @@ while True:
     elif choice == 3:
         all_tasks()
     elif choice == 4:
+        missed_task()
+    elif choice == 5:
         add_task()
+    elif choice == 6:
+        delete_task()
     elif choice == 0:
         break
     else:
