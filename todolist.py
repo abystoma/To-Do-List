@@ -91,13 +91,15 @@ def missed_task():
 
 
 def delete_task():
-    print("Choose the number of the task you want to delete:")
+    print("Choose the index of the tasks you want to delete separated by space:")
     tasks = session.query(Table).all()
     print_tasks(tasks)
-    session.delete(tasks[int(input()) - 1])
+    indexes = [int(i) - 1 for i in input().split(" ")]
+    for i in indexes:
+        session.delete(tasks[i])
     session.commit()
 
-    print("The task has been deleted!")
+    print(f"{len(indexes)} task(s) has been deleted!")
     print()
 
 
